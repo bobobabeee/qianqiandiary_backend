@@ -55,7 +55,7 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: bobobabeeee/glowmomen:latest
+          tags: yongliangcui/qianqian:latest
 
 #      #     使用ssh链接，远程操作云服务器拉取docker镜像，运行docker镜像生成容器。
 #      - name: pull image && restart container
