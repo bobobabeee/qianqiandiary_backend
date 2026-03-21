@@ -33,7 +33,7 @@ def _normalize_entry_id(entry_id):
 @diary_bp.route("/entries", methods=["GET"])
 @jwt_required()
 def list_entries():
-    uid = int(get_jwt_identity())
+    uid = int(request.headers.get("token", get_jwt_identity()))
     page = request.args.get("page", 1, type=int)
     page_size = request.args.get("page_size", 20, type=int)
     page_size = min(page_size, 50)
