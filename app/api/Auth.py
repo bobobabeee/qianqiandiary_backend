@@ -25,24 +25,36 @@ def login():
     # 生成Token（identity存储用户ID）
     access_token = create_access_token(identity=str(user.id))
     return success_response(data={
+            'user_id': user.id,
             'token': access_token,
+            'nickname': user.nickname or '',
             'user': user.to_dict()
-        },message="登陆成功")
+        }, message="登陆成功")
 
 @auth_bp.route("/regist", methods=["POST"])
 def regist():
-    data = request.get_json()
-    if  User.query.filter_by(username=data['username']).first():
+    data = request.get_json() or {}
+    if not data.get("username") or not data.get("password"):
+        return error_response(message="用户名和密码不能为空")
+    if User.query.filter_by(username=data["username"]).first():
         return error_response(message="用户名已存在！")
-    
+
     new_user = User(
-        username=data['username'],
-        password=data['password']
-        )
+        username=data["username"],
+        password=data["password"],
+        header=data.get("header"),
+    )
     
     db.session.add(new_user)
     db.session.commit()
-    return success_response(message='注册成功',data=new_user.to_dict())
+
+    access_token = create_access_token(identity=str(new_user.id))
+    return success_response(message='注册成功', data={
+        'user_id': new_user.id,
+        'token': access_token,
+        'nickname': new_user.nickname or '',
+        'user': new_user.to_dict()
+    })
 
 @auth_bp.route("/delete", methods=["POST"])
 def delete():

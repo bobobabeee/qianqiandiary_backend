@@ -27,5 +27,5 @@ class ProductionConfig(Config):
 # 配置映射，方便切换环境
 config_map = {
     "dev": DevelopmentConfig,
-    "prod": ProductionConfig
+    # "prod": ProductionConfig
 }
