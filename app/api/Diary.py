@@ -202,6 +202,16 @@ def diary_stats():
             top_count = cnt
             top_category = cat
 
+    def _parse_date(d):
+        if d is None:
+            return None
+        if hasattr(d, "strftime"):
+            return d
+        try:
+            return datetime.strptime(str(d)[:10], "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            return None
+
     distinct_dates = (
         db.session.query(DiaryEntry.date)
         .filter_by(user_id=uid)
@@ -209,7 +219,10 @@ def diary_stats():
         .order_by(desc(DiaryEntry.date))
         .all()
     )
-    date_set = sorted([r[0] for r in distinct_dates], reverse=True)
+    date_set = sorted(
+        filter(None, (_parse_date(r[0]) for r in distinct_dates)),
+        reverse=True,
+    )
     streak_days = 0
     check = today
     for d in date_set:
@@ -250,7 +263,10 @@ def diary_calendar():
         .distinct()
         .all()
     )
-    recorded = sorted(set(r[0].strftime('%Y-%m-%d') for r in rows))
+    def _date_str(d):
+        return d.strftime("%Y-%m-%d") if hasattr(d, "strftime") else str(d)
+
+    recorded = sorted(set(_date_str(r[0]) for r in rows))
 
     return success_response(data={
         "year": year,
@@ -277,14 +293,25 @@ def diary_highlights():
     today = date.today()
     yesterday = today - timedelta(days=1)
 
+    def _to_date(d):
+        if d is None:
+            return None
+        if hasattr(d, "strftime"):
+            return d
+        try:
+            return datetime.strptime(str(d)[:10], "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            return None
+
     result = []
     for e in entries:
-        if e.date == today:
+        d = _to_date(e.date)
+        if d == today:
             display_date = "今天"
-        elif e.date == yesterday:
+        elif d == yesterday:
             display_date = "昨天"
         else:
-            display_date = e.date.strftime('%Y-%m-%d')
+            display_date = d.strftime("%Y-%m-%d") if d else str(e.date)
 
         meta = CATEGORY_META.get(e.category, {"label": e.category, "color": "#CCCCCC"})
         result.append({

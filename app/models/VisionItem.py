@@ -25,11 +25,17 @@ class VisionItem(db.Model):
     )
 
     def to_dict(self):
+        if self.target_date is None:
+            target_val = None
+        elif hasattr(self.target_date, "strftime"):
+            target_val = self.target_date.strftime("%Y-%m-%d")
+        else:
+            target_val = str(self.target_date) if self.target_date else None
         return {
             "id": self.id,
             "category": self.category,
             "title": self.title or '',
             "description": self.description or '',
             "image_url": self.image_url or '',
-            "target_date": self.target_date.strftime('%Y-%m-%d') if self.target_date else None,
+            "target_date": target_val,
         }

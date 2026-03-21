@@ -24,9 +24,15 @@ class DiaryEntry(db.Model):
     )
 
     def to_dict(self):
+        if self.date is None:
+            date_val = None
+        elif hasattr(self.date, "strftime"):
+            date_val = self.date.strftime("%Y-%m-%d")
+        else:
+            date_val = str(self.date) if self.date else None
         return {
             "id": self.id,
-            "date": self.date.strftime('%Y-%m-%d') if self.date else None,
+            "date": date_val,
             "content": self.content,
             "category": self.category,
             "mood_icon": self.mood_icon,

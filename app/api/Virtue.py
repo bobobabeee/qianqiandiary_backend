@@ -240,7 +240,16 @@ def virtue_stats():
             "name": meta.get("name", vt),
         })
 
-    # 连续打卡天数
+    def _parse_date(d):
+        if d is None:
+            return None
+        if hasattr(d, "strftime"):
+            return d
+        try:
+            return datetime.strptime(str(d)[:10], "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            return None
+
     distinct_dates = (
         db.session.query(VirtuePracticeLog.date)
         .filter_by(user_id=uid, is_completed=True)
@@ -249,7 +258,10 @@ def virtue_stats():
         .all()
     )
     from datetime import timedelta
-    date_set = sorted([r[0] for r in distinct_dates], reverse=True)
+    date_set = sorted(
+        filter(None, (_parse_date(r[0]) for r in distinct_dates)),
+        reverse=True,
+    )
     streak_days = 0
     check = date.today()
     for d in date_set:
