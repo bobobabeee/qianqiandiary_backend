@@ -1,6 +1,9 @@
 # 使用官方 Python 3.12 镜像作为基础
 FROM python:3.12-slim
-
+# 调整时区
+RUN rm -f /etc/localtime \
+&& ln -sv /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+&& echo "Asia/Shanghai" > /etc/timezone
 # 设置工作目录
 WORKDIR /app
 
