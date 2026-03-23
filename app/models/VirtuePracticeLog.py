@@ -11,8 +11,8 @@ class VirtuePracticeLog(db.Model):
     virtue_type = db.Column(db.String(20), nullable=False)
     completed = db.Column('completed', db.Boolean, nullable=False, default=False)
     reflection = db.Column(db.Text, default='')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'date', 'virtue_type', name='uk_user_date_type'),
