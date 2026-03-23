@@ -1,20 +1,15 @@
-import uuid
 from datetime import datetime
 from app import db
-
-
-def _gen_id():
-    return str(uuid.uuid4())
 
 
 class VirtuePracticeLog(db.Model):
     __tablename__ = "virtue_practice_logs"
 
-    id = db.Column(db.String(50), primary_key=True, default=_gen_id)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.BigInteger, nullable=False)
     date = db.Column(db.Date, nullable=False)
     virtue_type = db.Column(db.String(20), nullable=False)
-    is_completed = db.Column(db.Boolean, nullable=False, default=False)
+    completed = db.Column('completed', db.Boolean, nullable=False, default=False)
     reflection = db.Column(db.Text, default='')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -34,6 +29,6 @@ class VirtuePracticeLog(db.Model):
             "id": self.id,
             "date": date_val,
             "virtue_type": self.virtue_type,
-            "is_completed": self.is_completed,
+            "is_completed": self.completed,
             "reflection": self.reflection or '',
         }

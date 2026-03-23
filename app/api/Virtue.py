@@ -195,24 +195,35 @@ def upsert_log():
         user_id=uid, date=log_date, virtue_type=virtue_type
     ).first()
 
+    is_completed_val = bool(data.get("is_completed", False))
+    reflection_val = data.get("reflection", "")
+
     if log:
         if "is_completed" in data:
-            log.is_completed = bool(data["is_completed"])
+            log.completed = is_completed_val
         if "reflection" in data:
-            log.reflection = data["reflection"]
+            log.reflection = reflection_val
         log.updated_at = datetime.utcnow()
     else:
         log = VirtuePracticeLog(
             user_id=uid,
             date=log_date,
             virtue_type=virtue_type,
-            is_completed=bool(data.get("is_completed", False)),
-            reflection=data.get("reflection", ""),
+            completed=is_completed_val,
+            reflection=reflection_val,
         )
         db.session.add(log)
 
+    db.session.flush()
+    resp_data = {
+        "id": log.id,
+        "date": log_date.strftime("%Y-%m-%d"),
+        "virtue_type": virtue_type,
+        "is_completed": log.completed,
+        "reflection": log.reflection or '',
+    }
     db.session.commit()
-    return success_response(data=log.to_dict(), message="保存成功")
+    return success_response(data=resp_data, message="保存成功")
 
 
 # ── 4.7 美德成长统计 ─────────────────────────────────────────
@@ -221,11 +232,11 @@ def upsert_log():
 def virtue_stats():
     uid = int(get_jwt_identity())
 
-    total_practices = VirtuePracticeLog.query.filter_by(user_id=uid, is_completed=True).count()
+    total_practices = VirtuePracticeLog.query.filter_by(user_id=uid, completed=True).count()
 
     type_rows = (
         db.session.query(VirtuePracticeLog.virtue_type, func.count(VirtuePracticeLog.id))
-        .filter_by(user_id=uid, is_completed=True)
+        .filter_by(user_id=uid, completed=True)
         .group_by(VirtuePracticeLog.virtue_type)
         .all()
     )
@@ -252,7 +263,7 @@ def virtue_stats():
 
     distinct_dates = (
         db.session.query(VirtuePracticeLog.date)
-        .filter_by(user_id=uid, is_completed=True)
+        .filter_by(user_id=uid, completed=True)
         .distinct()
         .order_by(desc(VirtuePracticeLog.date))
         .all()
